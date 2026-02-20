@@ -102,5 +102,59 @@ def generate_population():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route('/generate_priority', methods=['POST'])
+def generate_priority():
+
+    data = request.get_json()
+
+    # Expecting:
+    # {
+    #   "aqi_matrix": [[...100x100...]],
+    #   "population_matrix": [[...100x100...]],
+    # }
+
+    aqi_matrix = np.array(data.get("aqi_matrix"))
+    population_matrix = np.array(data.get("population_matrix"))
+
+    w_aqi = 0.6
+    w_population = 0.4
+
+    # Validate shape
+    if aqi_matrix.shape != population_matrix.shape:
+        return jsonify({"error": "Matrix sizes must match"}), 400
+
+    # Normalize AQI
+    aqi_min, aqi_max = aqi_matrix.min(), aqi_matrix.max()
+    aqi_norm = (aqi_matrix - aqi_min) / (aqi_max - aqi_min + 1e-9)
+
+    # Normalize Population
+    pop_min, pop_max = population_matrix.min(), population_matrix.max()
+    pop_norm = (population_matrix - pop_min) / (pop_max - pop_min + 1e-9)
+
+    # Weighted Sum Model
+    priority_matrix = (w_aqi * aqi_norm) + (w_population * pop_norm)
+
+    # Flatten and sort
+    priority_list = []
+
+    rows, cols = priority_matrix.shape
+
+    for i in range(rows):
+        for j in range(cols):
+            priority_list.append({
+                "x": i,
+                "y": j,
+                "priority_score": float(priority_matrix[i][j])
+            })
+
+    # Sort descending
+    priority_list.sort(key=lambda x: x["priority_score"], reverse=True)
+
+    return jsonify({
+        "top_5": priority_list[:5],
+    })
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)
