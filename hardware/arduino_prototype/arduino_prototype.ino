@@ -1,16 +1,20 @@
-#define sensor_A A0
-#define sensor_B A1
-#define sensor_C A2
-#define sensor_D A3
-#define sensor_E A4
-
 void setup() {
   Serial.begin(9600);
-  Serial.println("Preheating all MQ-135 sensors...");
-  delay(90000); // 90 sec
-  Serial.println("Preheat complete");
 }
-
 void loop() {
-  
+  int A = analogRead(A0);
+  int B = analogRead(A1);
+  int C = analogRead(A2);
+  int D = analogRead(A3);
+  int E = analogRead(A4);
+  Serial.print(A);
+  Serial.print(",");
+  Serial.print(B);
+  Serial.print(",");
+  Serial.print(C);
+  Serial.print(",");
+  Serial.print(D);
+  Serial.print(",");
+  Serial.println(E);
+  delay(1000);
 }
